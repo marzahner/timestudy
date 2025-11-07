@@ -2,6 +2,8 @@
 
 A native macOS menu bar app that automatically captures screenshots at regular intervals with optional annotations, compression, and custom quality settings.
 
+Recommended settings: 1280px, 40% compression
+
 ![macOS](https://img.shields.io/badge/macOS-14.0+-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -43,7 +45,7 @@ A native macOS menu bar app that automatically captures screenshots at regular i
 ### Requirements
 - macOS 14.0 or later
 - Xcode 15.0 or later (for building)
-- Apple Silicon (M1/M2/M3) or Intel Mac
+- Apple Silicon (M1 series) or Intel Mac
 
 ### Building from Source
 
@@ -221,3 +223,4 @@ For issues or questions, check the troubleshooting section or review the code co
 ---
 
 **Tip:** For long recording sessions, use lower quality settings (640px + 50% compression) to save disk space while maintaining readability.
+
