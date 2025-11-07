@@ -53,19 +53,16 @@ A native macOS menu bar app that automatically captures screenshots at regular i
    open AutoScreenshot.xcodeproj
    ```
 
-3. **Configure signing**
+3. **Select your development team**
    - Select project in sidebar
    - Go to "Signing & Capabilities"
-   - Select your development team
+   - Choose your Apple ID/team from dropdown
 
-4. **Disable App Sandbox** (important!)
-   - In "Signing & Capabilities" tab
-   - Click the "-" button next to "App Sandbox"
-   - This allows the app to save files to your chosen directory
-
-5. **Build and run**
+4. **Build and run**
    - Press ⌘+R or click Run button
    - App appears in menu bar (camera icon)
+
+**Note:** App Sandbox is already disabled in the project to allow file system access.
 
 ## Usage
 
