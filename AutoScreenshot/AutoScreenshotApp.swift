@@ -92,7 +92,11 @@ class ScreenshotManager: ObservableObject {
     @Published var usePresetAnnotation = false
     @Published var currentCapture: ScreenshotCapture?
     @Published var showAnnotationWindow = false
-    
+
+    // Session-specific properties
+    @Published var sessionScreenshotCount = 0
+    private var currentSessionDirectory: String = ""
+
     private var timer: Timer?
     var annotationWindow: NSWindow?
     
@@ -108,18 +112,45 @@ class ScreenshotManager: ObservableObject {
         
         updateEstimatedFileSize()
     }
-    
+
+    private func generateSessionDirectoryName() -> String {
+        let now = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: now)
+
+        guard let year = components.year,
+              let month = components.month,
+              let day = components.day,
+              let hour = components.hour,
+              let minute = components.minute else {
+            return "session_\(Int(now.timeIntervalSince1970))"
+        }
+
+        return String(format: "%d年%02d月%02d日 %02d:%02d", year, month, day, hour, minute)
+    }
+
     func start() {
         guard !isRunning else { return }
-        
-        // Create directory if it doesn't exist
+
+        // Create base directory if it doesn't exist
         createDirectoryIfNeeded()
-        
+
+        // Create new session directory
+        let sessionDirName = generateSessionDirectoryName()
+        currentSessionDirectory = (saveDirectory as NSString).appendingPathComponent(sessionDirName)
+
+        // Create session directory
+        let sessionURL = URL(fileURLWithPath: currentSessionDirectory)
+        try? FileManager.default.createDirectory(at: sessionURL, withIntermediateDirectories: true)
+
+        // Reset session screenshot count
+        sessionScreenshotCount = 0
+
         // Start timer
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             self?.takeScreenshot()
         }
-        
+
         isRunning = true
         savePreferences()
     }
@@ -226,16 +257,17 @@ class ScreenshotManager: ObservableObject {
                 .replacingOccurrences(of: "/", with: "-")
                 .replacingOccurrences(of: ":", with: "-")
                 .replacingOccurrences(of: " ", with: "_")
-            
-            let filename = includeTimestamp ? "screenshot_\(timestamp).jpg" : "screenshot_\(screenshotCount).jpg"
-            let savePath = (saveDirectory as NSString).appendingPathComponent(filename)
-            
+
+            let filename = includeTimestamp ? "screenshot_\(timestamp).jpg" : "screenshot_\(sessionScreenshotCount).jpg"
+            let savePath = (currentSessionDirectory as NSString).appendingPathComponent(filename)
+
             // Save compressed image as JPEG
             if let jpegData = processedImage.jpegData(compressionQuality: compressionQuality) {
                 try? jpegData.write(to: URL(fileURLWithPath: savePath))
-                
+
                 DispatchQueue.main.async {
                     self.screenshotCount += 1
+                    self.sessionScreenshotCount += 1
                     self.savePreferences()
                 }
             }
@@ -586,7 +618,7 @@ struct SettingsView: View {
                         Text("AutoScreenshot")
                             .font(.title2)
                             .bold()
-                        Text("\(manager.screenshotCount) screenshots taken")
+                        Text("\(manager.sessionScreenshotCount) screenshots in this session")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
